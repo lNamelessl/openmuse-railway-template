@@ -1,6 +1,6 @@
 # OpenMuse — Your Personal AI Agent, Self-Hosted
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pvdNW4)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/openmuse-template)
 
 OpenMuse (by the CopilotKit team) is a personal AI agent with a **browser, terminal, files, and persistent tasks** — durable task plans with approvals, inline email/browser/PDF cards, and thread persistence. This template deploys the full stack in one click: the web UI + API + durable task engine in one service, plus the Playwright/Chromium browser worker on Railway's private network.
 
