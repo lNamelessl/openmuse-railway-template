@@ -1,5 +1,7 @@
 # OpenMuse — Railway Template
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/openmuse-template)
+
 [OpenMuse](https://github.com/CopilotKit/openmuse) is a personal AI agent with a browser, terminal, files, and persistent tasks — built by the CopilotKit team. This repository packages it for one-click deployment on [Railway](https://railway.app).
 
 > **Dev-preview disclosure:** OpenMuse upstream is in Alpha and moves fast. This template builds upstream at a **pinned commit** (`34b15bc80340e582fb8c25573646cfb0bbc5184d`, 2026-09-26) plus a one-line same-origin patch, so deploys are reproducible even while upstream changes.
