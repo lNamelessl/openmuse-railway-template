@@ -44,7 +44,6 @@ ENV NODE_ENV=production \
     DO_NOT_TRACK=1 \
     COPILOTKIT_TELEMETRY_DISABLED=true \
     DATA_DIR=/data \
-    PORT=8787 \
     HOST=127.0.0.1
 
 RUN chmod +x /app/entrypoint.sh && mkdir -p /data

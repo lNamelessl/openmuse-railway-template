@@ -7,7 +7,9 @@ cd /src
 
 mkdir -p "${DATA_DIR:-/data}"
 
-node dist/apps/server/src/index.js &
+# The API port is fixed at 8787 (loopback): Railway injects PORT (8080) for the
+# public listener, which nginx uses — the API must not pick it up.
+PORT=8787 node dist/apps/server/src/index.js &
 NODE_PID=$!
 
 # Watchdog: if the API dies, take the whole container down so Railway's
