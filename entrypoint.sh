@@ -7,6 +7,13 @@ cd /src
 
 mkdir -p "${DATA_DIR:-/data}"
 
+# Runtime-derived config (keeps the template deploy form free of domain variables).
+# Railway injects RAILWAY_PUBLIC_DOMAIN at runtime; the browser worker is reachable
+# at <service-name>.railway.internal on the private network.
+export PUBLIC_API_URL="${PUBLIC_API_URL:-https://${RAILWAY_PUBLIC_DOMAIN:-localhost:8080}}"
+export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-${PUBLIC_API_URL}}"
+export BROWSER_WORKER_URL="${BROWSER_WORKER_URL:-http://browser-worker.railway.internal:8790}"
+
 # The API port is fixed at 8787 (loopback): Railway injects PORT (8080) for the
 # public listener, which nginx uses — the API must not pick it up.
 PORT=8787 node dist/apps/server/src/index.js &
