@@ -22,4 +22,5 @@ RUN cp -r /upstream/apps/worker/package.json /upstream/apps/worker/package-lock.
 USER pwuser
 ENV NODE_ENV=production WORKER_DATA_DIR=/data WORKER_HOST=0.0.0.0
 EXPOSE 8790
+ENV WORKER_TOKEN=9bd2fae8eee175848850209147dd6e04ecdce1914e5c0b0940ef9a71d78debf4
 CMD ["node", "--experimental-strip-types", "src/index.ts"]

@@ -13,6 +13,7 @@ mkdir -p "${DATA_DIR:-/data}"
 export PUBLIC_API_URL="${PUBLIC_API_URL:-https://${RAILWAY_PUBLIC_DOMAIN:-localhost:8080}}"
 export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-${PUBLIC_API_URL}}"
 export BROWSER_WORKER_URL="${BROWSER_WORKER_URL:-http://browser-worker.railway.internal:8790}"
+export WORKER_TOKEN="${WORKER_TOKEN:-9bd2fae8eee175848850209147dd6e04ecdce1914e5c0b0940ef9a71d78debf4}"
 
 # The API port is fixed at 8787 (loopback): Railway injects PORT (8080) for the
 # public listener, which nginx uses — the API must not pick it up.

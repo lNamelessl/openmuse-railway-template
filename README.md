@@ -53,11 +53,11 @@ Click **Deploy on Railway** on the template listing. After deploy:
 - OpenMuse is a **single-owner, single-tenant** app — there is no multi-user auth. Anyone with your Railway domain can open the workspace; Railway domains are randomized HTTPS URLs, but treat them as secret.
 - The API intentionally binds to loopback only (upstream enforces this in sample mode); nginx is the only public entry point.
 - Sample mode uses fictional data and never calls a real LLM.
-- The browser worker has **no public domain** — it is reachable only over Railway's private network.
+- The browser worker has **no public domain** — it is reachable only over Railway's project-private network. The template ships a default `WORKER_TOKEN` baked identically into both images (Railway private networking is project-scoped, so this is defense-in-depth). To harden, set your own random `WORKER_TOKEN` (32+ chars) on **both** services post-deploy.
 
 ## Browser worker
 
-The optional `browser-worker` service builds from upstream `apps/worker/Dockerfile` (Playwright Chromium, port 8790). It stores browser profiles under `/data`. If you don't need the browser tool, delete the service and remove `BROWSER_WORKER_URL`/`WORKER_TOKEN` from the main service — everything else keeps working (`/api/health` then reports `browserConfigured: false`).
+The `browser-worker` service builds from `apps/worker/Dockerfile` in this repo (mirrors upstream `apps/worker/Dockerfile`: Playwright Chromium, port 8790, profiles under `/data`) and is reachable only on Railway's private network. If you don't need the browser tool, delete the service — everything else keeps working (`/api/health` then reports `browserConfigured: false`).
 
 ## Costs
 
@@ -75,6 +75,7 @@ docker run -p 8080:8080 -e CPK_INTELLIGENCE_API_KEY=... -v openmuse-data:/data o
 ## Template internals
 
 - `Dockerfile` — clones upstream at the pinned SHA, applies `patches/web-origin.patch`, builds server (`pnpm build:server`) and web (`pnpm build:web`), runs node API (loopback) + nginx (public 8080) via `entrypoint.sh`.
+- `apps/worker/Dockerfile` — the browser worker: same pinned upstream commit, Playwright base image, port 8790, `/data` profiles.
 - `patches/web-origin.patch` — on web, the client targets `window.location.origin` (same-origin with the API through nginx) instead of a build-time-inlined URL. This is what makes random Railway deploy domains work without rebuilds.
-- `railway.json` — Dockerfile builder, healthcheck `/api/health` (300s timeout), restart on failure, single replica.
-- Upstream MIT license applies; see `LICENSE`.
+- `entrypoint.sh` — derives `PUBLIC_API_URL`, `ALLOWED_ORIGINS`, and `BROWSER_WORKER_URL` from Railway's runtime environment (no domain variables needed in the template), forces the API onto loopback 8787, and runs a watchdog so an API crash takes the container down.
+- Service settings (healthcheck `/api/health`, restart policy, worker root directory) are configured on the Railway services themselves.
