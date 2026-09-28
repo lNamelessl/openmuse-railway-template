@@ -1,0 +1,4 @@
+.git
+research
+*.md
+!README.md
