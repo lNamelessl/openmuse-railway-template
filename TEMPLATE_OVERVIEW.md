@@ -6,21 +6,25 @@ OpenMuse (by the CopilotKit team) is a personal AI agent with a **browser, termi
 
 Upstream is in active development (Alpha). This template builds from a **pinned commit** of [CopilotKit/openmuse](https://github.com/CopilotKit/openmuse) (MIT) plus a small same-origin patch, so your deploy is reproducible.
 
-## The one credential you need
+## The one credential you need — before you click Deploy
 
-Every OpenMuse mode requires a free **CopilotKit Intelligence project key** (it powers thread persistence and replay). The deploy form asks for it as `CPK_INTELLIGENCE_API_KEY`:
+Every OpenMuse mode requires a free **CopilotKit Intelligence project key** (it powers thread persistence and replay). Get it **before deploying** — the deploy form requires it and OpenMuse will not start without it, even in sample mode:
 
-1. Run `npx copilotkit@latest login` and sign in (free).
-2. Run `npx copilotkit@latest project select` and create/select a project.
-3. Copy the **server key** and paste it into the deploy form.
+1. On your machine, run `npx copilotkit@latest login` and sign in (free; creates a CopilotKit account if you don't have one).
+2. Run `npx copilotkit@latest project select` and create or select a project.
+3. Copy the **server key** it prints — make sure it is the *server* key, not the public key.
+4. Paste it into the Railway deploy form's `CPK_INTELLIGENCE_API_KEY` field when you click **Deploy on Railway**.
 
 That is the only input the template asks for. The app boots in **sample mode** (fictional data, no LLM keys) so you can explore the UI, chat, tasks, files, and browser immediately.
+
+**Deployed without the key?** The domain serves a setup page with the four steps above, and the deploy logs print the same instructions in a loud banner — the deployment stays up until the key is set. Fix: open the `openmuse` service → **Variables** → set `CPK_INTELLIGENCE_API_KEY` → the service redeploys into normal mode automatically.
 
 ## Post-deploy options (all optional)
 
 - **Real model:** set `AGENT_BACKEND=model`, `MODEL=openai/gpt-4o` (or `anthropic/claude-*`, `google/gemini-*`), and the matching `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` on the `openmuse` service. OpenAI-compatible endpoints work via `OPENAI_BASE_URL`.
 - **Live Google workspace:** set `WORKSPACE_MODE=live` plus `AGENT_BACKEND=model`, `OPENMUSE_ACCESS_KEY` (24+ random chars), `TOKEN_ENCRYPTION_KEY` (32 random bytes, base64), and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`. OAuth callback: `PUBLIC_API_URL + /api/google/callback`.
-- **RAM:** for heavy browsing sessions raise the `browser-worker` service to 2 GB RAM in its Railway settings.
+- **RAM:** both services run on Railway's default elastic compute — memory scales with actual usage. The browser worker idles at roughly 100-200 MB; Chromium draws extra only while a browsing session runs. No manual RAM setup needed; cap it lower in the worker's settings only if you want a hard limit.
+- **No browser tool?** Delete the `browser-worker` service — the app keeps working (`/api/health` then reports `browserConfigured: false`). To re-add it later: **New Service → GitHub Repo → `lNamelessl/openmuse-railway-template`** (branch `main`), then set its **Root Directory / Settings → Builder → Root Directory** to `apps/worker`, and set the shared `WORKER_TOKEN` variable to the same value as on `openmuse` (or leave unset — both images carry an identical default).
 
 # Deploy and Host
 
@@ -36,6 +40,7 @@ Security notes: OpenMuse is a single-owner app without multi-user auth — treat
 ## Why Deploy
 
 - **One click, one prompt:** the only deploy input is the CopilotKit key — domain-derived config (`PUBLIC_API_URL`, `ALLOWED_ORIGINS`, worker URL/token) is derived at runtime, so nothing else to configure.
+- **Deployed without the key? You're guided, not stranded:** the domain serves a setup page and the logs print the fix; set the variable and the service redeploys into normal mode on its own.
 - **Random-domain safe:** the web build targets its own origin, so Railway's generated domains work without rebuilds.
 - **Reproducible alpha tracking:** builds pin an upstream commit, so redoes are identical; bump the pin when you want updates.
 - **Private browser worker:** Chromium runs isolated on the private network — verified working on Railway.
@@ -53,7 +58,7 @@ Security notes: OpenMuse is a single-owner app without multi-user auth — treat
 
 ### Deployment Dependencies
 
-- A free **CopilotKit** account for the Intelligence server key (`npx copilotkit@latest login` → `project select`) — required in every mode, supplied in the deploy form.
-- A public **GitHub** connection — the template builds from `lNamelessl/openmuse-railway-template`, which pins upstream `CopilotKit/openmuse` (MIT) at commit `34b15bc80340e582fb8c25573646cfb0bbc5184d`.
+- A free **CopilotKit** account for the Intelligence server key — obtain it **before deploying**: `npx copilotkit@latest login` → `npx copilotkit@latest project select` → copy the **server key** → paste into the deploy form's `CPK_INTELLIGENCE_API_KEY` field. Required in every mode (sample included). If you deploy without it, the domain serves a setup page with these steps (and the deploy logs print them too).
+- A public **GitHub** connection — the template builds from `lNamelessl/openmuse-railway-template`, which pins upstream `CopilotKit/openmuse` (MIT) at commit `a4944f4c471d3dc93b8bfc060b5da309b5216ab2` (2026-10-26).
 - Optional: an LLM provider key (OpenAI, Anthropic, or Google) for `AGENT_BACKEND=model`; Google OAuth credentials for live workspace mode.
-- Optional: raise `browser-worker` RAM to 2 GB for heavy browsing.
+- Optional: the `browser-worker` service — delete it if you don't need the browser tool (re-add steps under "Post-deploy options").

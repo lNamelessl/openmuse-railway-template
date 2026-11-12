@@ -2,7 +2,7 @@
 # OpenMuse browser-worker for Railway — mirrors upstream apps/worker/Dockerfile
 # (https://github.com/CopilotKit/openmuse, MIT) but sources the worker files from
 # the same pinned upstream commit the main service builds from.
-ARG UPSTREAM_SHA=34b15bc80340e582fb8c25573646cfb0bbc5184d
+ARG UPSTREAM_SHA=a4944f4c471d3dc93b8bfc060b5da309b5216ab2
 
 FROM mcr.microsoft.com/playwright:v1.62.1-noble
 ARG UPSTREAM_SHA

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # OpenMuse Railway template — builds the upstream pnpm monorepo at a pinned commit.
 # Upstream: https://github.com/CopilotKit/openmuse (MIT)
-ARG UPSTREAM_SHA=34b15bc80340e582fb8c25573646cfb0bbc5184d
+ARG UPSTREAM_SHA=a4944f4c471d3dc93b8bfc060b5da309b5216ab2
 
 # ---------- build stage: server (tsc) + web (expo export) ----------
 FROM node:24-slim AS build
@@ -38,6 +38,7 @@ RUN apt-get update \
  && rm -f /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /app/entrypoint.sh
+COPY setup-server.js /app/setup-server.js
 COPY --from=build /src /src
 
 ENV NODE_ENV=production \

@@ -15,6 +15,36 @@ export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-${PUBLIC_API_URL}}"
 export BROWSER_WORKER_URL="${BROWSER_WORKER_URL:-http://browser-worker.railway.internal:8790}"
 export WORKER_TOKEN="${WORKER_TOKEN:-9bd2fae8eee175848850209147dd6e04ecdce1914e5c0b0940ef9a71d78debf4}"
 
+# ---- CPK Intelligence key gate ----
+# OpenMuse refuses to boot without CPK_INTELLIGENCE_API_KEY — even in sample mode
+# (apps/server/src/config.ts calls required() on it at startup). Instead of a
+# crash loop with the reason buried mid-log, enter SETUP MODE: log a loud banner
+# and serve step-by-step instructions on the public port. /api/health answers 200
+# with a setup:true body so the deployment stays up and the page stays reachable
+# (a failing healthcheck would kill the deployment minutes after deploy — and a
+# keyless deploy should not count as a broken deploy). Setting the variable
+# redeploys the service straight into normal mode.
+if [ -z "$(printf '%s' "${CPK_INTELLIGENCE_API_KEY-}" | tr -d '[:space:]')" ]; then
+  cat >&2 <<'BANNER'
+
+======================================================================
+  CPK INTELLIGENCE KEY MISSING  (CPK_INTELLIGENCE_API_KEY is not set)
+  OpenMuse cannot start without it — even in sample mode.
+
+  Get a free key in ~2 minutes:
+    1. npx copilotkit@latest login           (sign in / create a free CopilotKit account)
+    2. npx copilotkit@latest project select  (create or pick a project)
+    3. copy the SERVER key it prints
+    4. Railway -> this service -> Variables -> set CPK_INTELLIGENCE_API_KEY
+       (the service redeploys automatically)
+
+  A setup page with these instructions is now served on this domain.
+======================================================================
+
+BANNER
+  exec node /app/setup-server.js
+fi
+
 # The API port is fixed at 8787 (loopback): Railway injects PORT (8080) for the
 # public listener, which nginx uses — the API must not pick it up.
 PORT=8787 node dist/apps/server/src/index.js &

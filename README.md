@@ -4,7 +4,7 @@
 
 [OpenMuse](https://github.com/CopilotKit/openmuse) is a personal AI agent with a browser, terminal, files, and persistent tasks — built by the CopilotKit team. This repository packages it for one-click deployment on [Railway](https://railway.app).
 
-> **Dev-preview disclosure:** OpenMuse upstream is in Alpha and moves fast. This template builds upstream at a **pinned commit** (`34b15bc80340e582fb8c25573646cfb0bbc5184d`, 2026-09-26) plus a one-line same-origin patch, so deploys are reproducible even while upstream changes.
+> **Dev-preview disclosure:** OpenMuse upstream is in Alpha and moves fast. This template builds upstream at a **pinned commit** (`a4944f4c471d3dc93b8bfc060b5da309b5216ab2`, 2026-10-26) plus a one-line same-origin patch, so deploys are reproducible even while upstream changes.
 
 ## What gets deployed
 
@@ -17,13 +17,15 @@ The task worker runs **in-process** by default (`TASK_WORKER_ENABLED=true`). Ope
 
 ## The one required credential: CopilotKit Intelligence key
 
-Every OpenMuse mode requires a server-only **CopilotKit Intelligence project key** — the deploy form will ask for it:
+Every OpenMuse mode requires a server-only **CopilotKit Intelligence project key** — the deploy form will ask for it. Get it **before** you deploy (takes ~2 minutes, free):
 
-1. Run `npx copilotkit@latest login` and sign in (free).
-2. Run `npx copilotkit@latest project select` and create/select a project.
-3. Copy the **server key** and paste it as `CPK_INTELLIGENCE_API_KEY` in the Railway deploy form.
+1. On your machine, run `npx copilotkit@latest login` and sign in (free; creates a CopilotKit account if you don't have one).
+2. Run `npx copilotkit@latest project select` and create or select a project.
+3. Copy the **server key** it prints and paste it as `CPK_INTELLIGENCE_API_KEY` in the Railway deploy form.
 
 Keep the key server-only — never expose it client-side.
+
+**What if you deploy without the key?** OpenMuse cannot start without it — even in sample mode. The container enters **setup mode**: the domain serves a step-by-step page with the exact instructions above, and the deploy logs print the same instructions in a loud banner. The deployment stays up (a setup page is not a broken deploy) until you set the variable — then it redeploys into normal mode automatically.
 
 ## Deploy
 
@@ -59,12 +61,15 @@ Click **Deploy on Railway** on the template listing. After deploy:
 
 ## Browser worker
 
-The `browser-worker` service builds from `apps/worker/Dockerfile` in this repo (mirrors upstream `apps/worker/Dockerfile`: Playwright Chromium, port 8790, profiles under `/data`) and is reachable only on Railway's private network. If you don't need the browser tool, delete the service — everything else keeps working (`/api/health` then reports `browserConfigured: false`).
+The `browser-worker` service builds from `apps/worker/Dockerfile` in this repo (mirrors upstream `apps/worker/Dockerfile`: Playwright Chromium, port 8790, profiles under `/data`) and is reachable only on Railway's private network. It runs on Railway's default elastic compute — Chromium draws only what a browsing session needs, and the idle worker sits at roughly 100-200 MB.
+
+- **Don't need the browser tool?** Delete the `browser-worker` service — everything else keeps working (`/api/health` then reports `browserConfigured: false`).
+- **Need it back later?** Add a service from this repo (`lNamelessl/openmuse-railway-template`, branch `main`) and set its **Root Directory** to `apps/worker`; then set the shared `WORKER_TOKEN` variable on it to the same value as on `openmuse` (or leave unset — both images carry an identical default).
 
 ## Costs
 
-- Main service (1 GB RAM): ~$10/month
-- Browser worker (2 GB RAM): ~+$20/month — delete it if unused
+- Main service: ~$10/month at typical 1 GB usage (elastic)
+- Browser worker: a few $/month idle (~100-200 MB); more only while browsing sessions run — delete it if unused
 - Sample mode: no LLM API costs. Model mode: your provider's usage.
 
 ## Local build
